@@ -17,16 +17,11 @@ RUN cp /tmp/etcd/etcd /usr/local/bin/
 RUN cp /tmp/etcd/etcdctl /usr/local/bin/
 
 COPY etcd.conf /etc/etcd.conf
-COPY etcd3.service /etc/systemd/system/etcd3.service
 
 RUN etcd --version
 RUN etcdctl version
 
-RUN systemctl daemon-reload
-RUN systemctl enable etcd3
-RUN systemctl start etcd3
-
-RUN echo -e 'etcdctl cluster-health\n\
-etcdctl --endpoints=localhost:2379 put foo bar\n\
-etcdctl --endpoints=localhost:2379 get foo\n'
+ENV SELF_IP=localhost
+ENV NODE_1_IP=localhost
+CMD /bin/sh -c "/usr/local/bin/etcd --name etcd-${SELF_IP} --data-dir /var/lib/etcd --quota-backend-bytes 8589934592 --auto-compaction-retention 3 --listen-client-urls http://${SELF_IP}:2379,http://localhost:2379 --advertise-client-urls http://${SELF_IP}:2379,http://localhost:2379 --listen-peer-urls http://${SELF_IP}:2380 --initial-advertise-peer-urls http://${SELF_IP}:2380 --initial-cluster 'etcd-${NODE_1_IP}=http://${NODE_1_IP}:2380' --initial-cluster-token my-etcd-token --initial-cluster-state new"
 

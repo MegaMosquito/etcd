@@ -9,13 +9,16 @@ dev: build stop
 
 run: stop
 	-docker rm -f etcd 2>/dev/null || :
-	docker run -d --name etcd -p 2379:2379 -p 2380:2380 ibmosquito/etcd:1.0.0 /bin/sh
+	docker run -d --name etcd -p 2379:2379 -p 2380:2380 ibmosquito/etcd:1.0.0
 
 test:
-	docker exec -it etcd etcdctl cluster-health
+	docker exec -it etcd etcdctl endpoint health
+	docker exec -it etcd etcdctl --endpoints=localhost:2379 put foo bar
+	docker exec -it etcd etcdctl --endpoints=localhost:2379 get foo
+	docker exec -it etcd etcdctl --endpoints=localhost:2379 del foo
 
 exec:
-	docker exec -it etcd /bin/sh
+	docker exec -it etcd /bin/bash
 
 push:
 	docker push ibmosquito/etcd:1.0.0
